@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">IneedPizza&amp;Beer</string>
+    <string name="error_unexpected_message">Something went wrong, please try again.</string>
+    <string name="error_network">Please check your Internet Connection.</string>
+</resources>
