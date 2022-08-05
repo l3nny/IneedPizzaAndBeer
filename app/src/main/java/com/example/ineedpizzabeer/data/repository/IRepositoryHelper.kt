@@ -6,8 +6,8 @@ import com.example.ineedpizzabeer.utils.ViewStateResult
 
 interface IRepositoryHelper {
     suspend fun getBusinesses(
-        lat: Double,
-        lon: Double,
+        lat: Double?=null,
+        lon: Double?=null,
         termSearch: String
     ): ViewStateResult<BusinessesResponse?>
 

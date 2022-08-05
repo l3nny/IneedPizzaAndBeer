@@ -9,8 +9,8 @@ object BindingAdapter {
     @JvmStatic
     @BindingAdapter("src")
     fun setImage(view: ImageView, url: String?) {
-        if (url != null) {
-            view.load(url)
+        url?.let {
+            view.load(it)
         }
     }
 }

@@ -12,8 +12,8 @@ class Repository @Inject constructor(
     private val repository: IRepositoryHelper
 ) : IRepository {
     override fun getBusinesses(
-        lat: Double,
-        lon: Double,
+        lat: Double?,
+        lon: Double?,
         termSearch: String
     ): Flow<ViewStateResult<BusinessesResponse?>> =
         flow {

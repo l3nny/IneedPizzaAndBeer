@@ -11,17 +11,14 @@ private const val FILE_SCHEME = "file"
 
 // Load callback provided if there is any task to perform once image is loaded or failed.
 @SuppressLint("CheckResult")
-fun ImageView.load(imageUrl: String, loadCallback: (() -> Unit)? = null) {
+fun ImageView.load(imageUrl: String) {
 
     if (imageUrl.isEmpty()) {
-        // Load placeholder if image is missing maybe?
         GlideApp.with(context).load(setImageResource(R.mipmap.ic_launcher))
-
     } else {
         if (isLoadable()) {
 
-            // don't use GlideUrl for local files as it causes refresh problems
-            val request = if (Uri.parse(imageUrl).scheme == FILE_SCHEME) {
+            if (Uri.parse(imageUrl).scheme == FILE_SCHEME) {
                 GlideApp.with(context).asGif().load(imageUrl)
             } else {
                 GlideApp.with(context)

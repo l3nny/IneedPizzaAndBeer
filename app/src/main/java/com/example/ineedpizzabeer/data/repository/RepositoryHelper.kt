@@ -1,5 +1,6 @@
 package com.example.ineedpizzabeer.data.repository
 
+import android.util.Log
 import com.example.ineedpizzabeer.data.ProjectDao
 import com.example.ineedpizzabeer.domain.model.BusinessesResponse
 import com.example.ineedpizzabeer.data.Service
@@ -14,8 +15,8 @@ class RepositoryHelper @Inject constructor(
     private  val dao: ProjectDao
 ) : IRepositoryHelper {
     override suspend fun getBusinesses(
-        lat: Double,
-        lon: Double,
+        lat: Double?,
+        lon: Double?,
         termSearch: String
     ): ViewStateResult<BusinessesResponse?> {
         return try {
@@ -39,7 +40,8 @@ class RepositoryHelper @Inject constructor(
                 ViewStateResult.Error(ResultException.DataBase("You don't have previous data to show, please connect to the internet to add data"))
             }
         } catch (e: Exception) {
-            ViewStateResult.Error(RequestErrorHandler.getRequestError(e))
+            Log.e("", RequestErrorHandler.getRequestError(e).toString(), null)
+            ViewStateResult.Error(ResultException.DataBase("You don't have previous data to show, please connect to the internet to add data"))
         }
     }
 

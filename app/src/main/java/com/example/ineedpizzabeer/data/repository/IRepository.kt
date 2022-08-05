@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface IRepository {
     fun getBusinesses(
-        lat: Double,
-        lon: Double,
+        lat: Double?= null,
+        lon: Double?=null,
         termSearch: String
     ): Flow<ViewStateResult<BusinessesResponse?>>
 

@@ -8,8 +8,6 @@ import com.example.ineedpizzabeer.domain.model.Businesses
 import com.example.ineedpizzabeer.domain.model.BusinessesResponse
 import com.example.ineedpizzabeer.presentation.adapter.GenericRecyclerBindingAdapter
 import com.example.ineedpizzabeer.utils.*
-import com.example.ineedpizzabeer.utils.Constants.LATITUDE
-import com.example.ineedpizzabeer.utils.Constants.LONGITUDE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,10 +26,6 @@ class MainViewModel @Inject constructor(
 
     private var _loading = MutableStateFlow(false)
     var loading = _loading.asStateFlow()
-    var _latitude = MutableStateFlow(LATITUDE)
-    var latitude = _latitude.asStateFlow()
-    var _longitude = MutableStateFlow(LONGITUDE)
-    var longitude = _longitude.asStateFlow()
     private var _triggerErrorDialog = MutableStateFlow("")
     var triggerErrorDialog = _triggerErrorDialog.asStateFlow()
 
@@ -47,11 +41,12 @@ class MainViewModel @Inject constructor(
     private val businessesResultsFromDB: StateFlow<ViewStateResult<List<Businesses?>>> =
         _businessesResultsFromDB
 
-    private val selectionAction = object : GenericRecyclerBindingAdapter.OnItemClickListener<Businesses>{
-        override fun onItemClick(position: Int, item: Businesses) {
-            item
+    private val selectionAction =
+        object : GenericRecyclerBindingAdapter.OnItemClickListener<Businesses> {
+            override fun onItemClick(position: Int, item: Businesses) {
+                item
+            }
         }
-    }
 
     init {
         viewModelScope.launch {
@@ -67,7 +62,6 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-
         viewModelScope.launch {
             businessesResultsFromDB.collectLatest {
                 it.onSuccess { data ->
@@ -76,19 +70,11 @@ class MainViewModel @Inject constructor(
                         setBusinessesDataFromDB(data)
                     }
                 }
-                    .onError {error->
-                        _triggerErrorDialog.value = error.toString()
+                    .onError { error ->
+                        _triggerErrorDialog.value = error.messageResource.toString()
                     }.onLoading {
                         _loading.value = true
                     }
-            }
-        }
-
-        viewModelScope.launch {
-            latitude.collectLatest {
-                if (it != LATITUDE) {
-                    getData()
-                }
             }
         }
     }
@@ -123,16 +109,16 @@ class MainViewModel @Inject constructor(
         businessesListAdapter.submitList(data as ArrayList<Businesses>)
     }
 
-    fun getData() {
+    fun getData(latitude: Double? = null, longitude: Double? = null) {
         businessesMap.clear()
         getBusinessesData(
-            latitude.value,
-            longitude.value,
+            latitude,
+            longitude,
             "pizza"
         )
         getBusinessesData(
-            latitude.value,
-            longitude.value,
+            latitude,
+            longitude,
             "beer"
         )
     }

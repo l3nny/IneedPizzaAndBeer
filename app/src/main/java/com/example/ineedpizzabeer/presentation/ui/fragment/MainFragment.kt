@@ -1,5 +1,6 @@
 package com.example.ineedpizzabeer.presentation.ui.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,11 +11,14 @@ import androidx.lifecycle.lifecycleScope
 import com.example.ineedpizzabeer.databinding.FragmentMainBinding
 import com.example.ineedpizzabeer.presentation.ui.view.MainActivity
 import com.example.ineedpizzabeer.presentation.viewModel.MainViewModel
+import com.example.ineedpizzabeer.utils.Constants
 import com.example.ineedpizzabeer.utils.CustomDialog
 import com.example.ineedpizzabeer.utils.isLocationPermissionGranted
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
@@ -26,6 +30,14 @@ class MainFragment : Fragment() {
 
     val viewModel: MainViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
+    private val fusedLocationClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+    }
+
+    private var _latitude = MutableStateFlow(Constants.LATITUDE)
+    var latitude = _latitude.asStateFlow()
+    private var _longitude = MutableStateFlow(Constants.LONGITUDE)
+    var longitude = _longitude.asStateFlow()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,12 +51,12 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initObserver()
         if (isLocationPermissionGranted(requireActivity())) {
             getLastLocation()
         } else {
             viewModel.getData()
         }
-        initObserver()
     }
 
     private fun initObserver() {
@@ -58,26 +70,36 @@ class MainFragment : Fragment() {
                         View.GONE
                 }
             }
+        }
 
+        lifecycleScope.launchWhenStarted {
             viewModel.triggerErrorDialog.collectLatest {
-                context?.let { mContext ->
-                    CustomDialog(mContext).show(
-                        "Error",
-                        it
-                    )
+                if(it.isNotEmpty()) {
+                    context?.let { mContext ->
+                        CustomDialog(mContext).show(
+                            "Error",
+                            it
+                        )
+                    }
+                }
+            }
+        }
+        lifecycleScope.launchWhenStarted {
+            latitude.collectLatest {
+                if (it != Constants.LATITUDE) {
+                    viewModel.getData(latitude.value,longitude.value)
                 }
             }
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun getLastLocation() {
-        val fusedLocationClient: FusedLocationProviderClient =
-            LocationServices.getFusedLocationProviderClient(requireActivity())
         fusedLocationClient.lastLocation.addOnCompleteListener(requireActivity()) { task ->
-            if (task.isSuccessful && task.result != null) {
-                task.result.let {
-                    viewModel._latitude.value = it.latitude
-                    viewModel._longitude.value = it.longitude
+            if (task.isSuccessful) {
+                task.result?.let {
+                    _latitude.value = it.latitude
+                    _longitude.value = it.longitude
                 }
             }
         }
